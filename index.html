@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>SystemVerilog 3.1a Cheatsheet (Sections 1–10)</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      display: flex;
+      height: 100vh;
+      color: #1f2933;
+      background: #f9fafb;
+    }
+    .sidebar {
+      width: 260px;
+      background: #111827;
+      color: #e5e7eb;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+    .sidebar h1 {
+      font-size: 18px;
+      margin: 0 0 10px 0;
+      color: #f9fafb;
+    }
+    .sidebar p {
+      font-size: 12px;
+      margin: 0 0 10px 0;
+      color: #9ca3af;
+    }
+    .section-button {
+      width: 100%;
+      text-align: left;
+      border: none;
+      padding: 7px 9px;
+      margin-bottom: 4px;
+      border-radius: 6px;
+      cursor: pointer;
+      background: transparent;
+      color: inherit;
+      font-size: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .section-button span.label {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .section-button span.id {
+      opacity: 0.7;
+      font-size: 12px;
+      margin-left: 8px;
+    }
+    .section-button:hover {
+      background: #1f2937;
+    }
+    .section-button.active {
+      background: #10b981;
+      color: #022c22;
+      font-weight: 600;
+    }
+
+    .main {
+      flex: 1;
+      padding: 16px 20px;
+      overflow-y: auto;
+    }
+    .section-header {
+      margin-bottom: 12px;
+    }
+    .section-header h2 {
+      margin: 0;
+      font-size: 20px;
+      color: #111827;
+    }
+    .section-header .meta {
+      font-size: 13px;
+      color: #6b7280;
+      margin-top: 3px;
+    }
+    .subsection {
+      background: #ffffff;
+      border-radius: 8px;
+      padding: 11px 13px;
+      margin-bottom: 10px;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+      border: 1px solid #e5e7eb;
+    }
+    .subsection-title {
+      font-weight: 600;
+      font-size: 15px;
+      margin-bottom: 4px;
+      color: #111827;
+    }
+    .subsection-id {
+      font-size: 12px;
+      color: #9ca3af;
+      margin-bottom: 6px;
+    }
+    .subsection-notes {
+      margin: 0 0 8px 0;
+      padding-left: 18px;
+      font-size: 14px;
+      color: #374151;
+    }
+    .subsection-notes li {
+      margin-bottom: 2px;
+    }
+    pre {
+      margin: 0;
+      background: #0b1020;
+      color: #e5e7eb;
+      padding: 8px;
+      border-radius: 6px;
+      font-size: 13px;
+      overflow-x: auto;
+    }
+    code {
+      font-family: "Fira Code", "SF Mono", Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+    }
+    .placeholder {
+      font-size: 14px;
+      color: #6b7280;
+      background: #e5e7eb;
+      border-radius: 8px;
+      padding: 12px;
+      border: 1px dashed #cbd5f5;
+    }
+
+    @media (max-width: 768px) {
+      body { flex-direction: column; }
+      .sidebar {
+        width: 100%;
+        height: auto;
+        flex-direction: row;
+        flex-wrap: wrap;
+      }
+      .section-button {
+        width: calc(50% - 4px);
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <aside class="sidebar">
+    <div>
+      <h1>SystemVerilog Cheatsheet</h1>
+      <p>Sections 1–10. Click a section to view its subsections.</p>
+    </div>
+    <div id="sections-container"></div>
+  </aside>
+
+  <main class="main">
+    <div id="main-content">
+      <div class="placeholder">
+        Loading sections data...
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const sectionsContainer = document.getElementById("sections-container");
+    const mainContent = document.getElementById("main-content");
+    let cheatsheetData = null;
+    let activeSectionId = null;
+
+    function renderSidebar(sections) {
+      sectionsContainer.innerHTML = "";
+      sections
+        .filter(s => s.id >= 1 && s.id <= 10)
+        .forEach(section => {
+          const btn = document.createElement("button");
+          btn.className = "section-button";
+          btn.dataset.sectionId = section.id;
+
+          const labelSpan = document.createElement("span");
+          labelSpan.className = "label";
+          labelSpan.textContent = section.title;
+
+          const idSpan = document.createElement("span");
+          idSpan.className = "id";
+          idSpan.textContent = `§${section.id}`;
+
+          btn.appendChild(labelSpan);
+          btn.appendChild(idSpan);
+
+          btn.addEventListener("click", () => {
+            setActiveSection(section.id);
+          });
+
+          sectionsContainer.appendChild(btn);
+        });
+    }
+
+    function setActiveSection(sectionId) {
+      activeSectionId = sectionId;
+      document.querySelectorAll(".section-button").forEach(btn => {
+        btn.classList.toggle("active", Number(btn.dataset.sectionId) === sectionId);
+      });
+      const section = cheatsheetData.sections.find(s => s.id === sectionId);
+      renderSection(section);
+    }
+
+    function renderSection(section) {
+      if (!section) return;
+      mainContent.innerHTML = "";
+
+      const header = document.createElement("div");
+      header.className = "section-header";
+      header.innerHTML = `
+        <h2>Section ${section.id}: ${section.title}</h2>
+        <div class="meta">${section.subsections.length} subsections</div>
+      `;
+      mainContent.appendChild(header);
+
+      section.subsections.forEach(sub => {
+        const box = document.createElement("div");
+        box.className = "subsection";
+
+        const title = document.createElement("div");
+        title.className = "subsection-title";
+        title.textContent = sub.title;
+
+        const id = document.createElement("div");
+        id.className = "subsection-id";
+        id.textContent = `§${sub.id}`;
+
+        const notesList = document.createElement("ul");
+        notesList.className = "subsection-notes";
+        (sub.notes || []).forEach(n => {
+          const li = document.createElement("li");
+          li.textContent = n;
+          notesList.appendChild(li);
+        });
+
+        const pre = document.createElement("pre");
+        const code = document.createElement("code");
+        code.textContent = sub.example || "";
+        pre.appendChild(code);
+
+        box.appendChild(title);
+        box.appendChild(id);
+        box.appendChild(notesList);
+        box.appendChild(pre);
+
+        mainContent.appendChild(box);
+      });
+    }
+
+    // Load JSON data from external file
+    fetch("data/systemverilog_sections.json")
+      .then(resp => resp.json())
+      .then(json => {
+        cheatsheetData = json;
+        renderSidebar(cheatsheetData.sections);
+        const firstSection = cheatsheetData.sections.find(s => s.id === 1);
+        if (firstSection) setActiveSection(firstSection.id);
+      })
+      .catch(err => {
+        mainContent.innerHTML = "";
+        const div = document.createElement("div");
+        div.className = "placeholder";
+        div.textContent = "Failed to load sections data: " + err;
+        mainContent.appendChild(div);
+      });
+  </script>
+</body>
+</html>
