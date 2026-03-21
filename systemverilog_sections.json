@@ -1,0 +1,725 @@
+{
+  "sections": [
+    {
+      "id": 1,
+      "title": "Introduction to SystemVerilog",
+      "subsections": [
+        {
+          "id": "1.1",
+          "title": "Introduction (informative)",
+          "notes": [
+            "SystemVerilog is a superset of Verilog-2001 aimed at design and verification.",
+            "It adds strong typing, interfaces, assertions, constrained random, and OOP.",
+            "Both RTL and verification environments can be written in one language."
+          ],
+          "example": "module intro_example;\n  logic clk;\n  initial begin\n    clk = 0;\n    forever #5 clk = ~clk;\n  end\nendmodule"
+        }
+      ]
+    },
+
+    {
+      "id": 2,
+      "title": "Literal Values",
+      "subsections": [
+        {
+          "id": "2.1",
+          "title": "Introduction (informative)",
+          "notes": [
+            "Literals represent fixed values for integers, logic, real, time, strings, arrays, and structs.",
+            "Syntax extensions support 4-state logic and sized constants familiar from Verilog."
+          ],
+          "example": "module lit_intro;\nendmodule"
+        },
+        {
+          "id": "2.2",
+          "title": "Literal value syntax",
+          "notes": [
+            "General form: <size>'<base><digits> for numeric literals, such as 4'b1010.",
+            "Base can be b, o, d, or h; size controls truncation and padding."
+          ],
+          "example": "module lit_syntax;\n  logic [3:0] a = 4'b1010;\n  logic [7:0] b = 8'hFF;\nendmodule"
+        },
+        {
+          "id": "2.3",
+          "title": "Integer and logic literals",
+          "notes": [
+            "Integer and logic literals can include x and z for unknown and high-impedance bits.",
+            "Unsized literals are at least 32 bits and may be sign-extended."
+          ],
+          "example": "module int_logic_lits;\n  logic [3:0] v1 = 4'b10xz;\n  int         v2 = 32'd10;\nendmodule"
+        },
+        {
+          "id": "2.4",
+          "title": "Real literals",
+          "notes": [
+            "Real literals use decimal and optional exponent, for example 1.25, 3.0e-2.",
+            "They are used with real and shortreal types for approximate arithmetic."
+          ],
+          "example": "module real_lits;\n  real a = 1.25;\n  real b = 3.0e-2;\nendmodule"
+        },
+        {
+          "id": "2.5",
+          "title": "Time literals",
+          "notes": [
+            "Time literals combine a number and a time unit such as 10ns or 2.5us.",
+            "Effective time units depend on `timescale or timeunit/timeprecision."
+          ],
+          "example": "`timescale 1ns/1ps\nmodule time_lits;\n  initial begin\n    #10ns;\n  end\nendmodule"
+        },
+        {
+          "id": "2.6",
+          "title": "String literals",
+          "notes": [
+            "String literals are double-quoted sequences of characters, for example \"HELLO\".",
+            "They are stored in the string data type and support standard operations."
+          ],
+          "example": "module string_lits;\n  string s = \"Hello, SystemVerilog\";\nendmodule"
+        },
+        {
+          "id": "2.7",
+          "title": "Array literals",
+          "notes": [
+            "Array literals use '{ ... } with positional or keyed assignments.",
+            "They can initialize fixed-size and dynamic arrays."
+          ],
+          "example": "module array_lits;\n  int a[3] = '{1, 2, 3};\n  int b[3] = '{default: 0};\nendmodule"
+        },
+        {
+          "id": "2.8",
+          "title": "Structure literals",
+          "notes": [
+            "Structure literals use '{member: value, ...} syntax.",
+            "Members can be given in any order when named."
+          ],
+          "example": "typedef struct {\n  int    id;\n  string name;\n} item_t;\n\nmodule struct_lits;\n  item_t it = '{id: 1, name: \"pkt\"};\nendmodule"
+        }
+      ]
+    },
+
+    {
+      "id": 3,
+      "title": "Data Types",
+      "subsections": [
+        {
+          "id": "3.1",
+          "title": "Introduction (informative)",
+          "notes": [
+            "SystemVerilog extends Verilog types with 2-state types, strings, classes, and more.",
+            "Types can be scalar or aggregate, such as arrays, structs, or classes."
+          ],
+          "example": "module dt_intro;\nendmodule"
+        },
+        {
+          "id": "3.2",
+          "title": "Data type syntax",
+          "notes": [
+            "Types appear before the variable name, with optional packed and unpacked dimensions.",
+            "typedef introduces user-defined type names."
+          ],
+          "example": "typedef logic [7:0] byte_t;\nmodule dt_syntax;\n  byte_t b;\n  int    arr[4];\nendmodule"
+        },
+        {
+          "id": "3.3",
+          "title": "Integer data types",
+          "notes": [
+            "Use byte, shortint, int, and longint for 2-state signed integral types.",
+            "integer is kept for backward compatibility and is 32-bit signed."
+          ],
+          "example": "module dt_integer;\n  byte      b;\n  shortint  s;\n  int       i;\n  longint   l;\nendmodule"
+        },
+        {
+          "id": "3.4",
+          "title": "Real and shortreal data types",
+          "notes": [
+            "real is typically a 64-bit double; shortreal is usually a 32-bit float.",
+            "They support approximate arithmetic useful for modeling."
+          ],
+          "example": "module dt_real;\n  real      r;\n  shortreal sr;\nendmodule"
+        },
+        {
+          "id": "3.5",
+          "title": "Void data type",
+          "notes": [
+            "void is used for functions that do not return a value.",
+            "It is only valid as a function return type."
+          ],
+          "example": "function void log_msg(string s);\n  $display(\"%s\", s);\nendfunction"
+        },
+        {
+          "id": "3.6",
+          "title": "chandle data type",
+          "notes": [
+            "chandle is an opaque handle for C pointers used with DPI.",
+            "You cannot perform arithmetic on chandle values."
+          ],
+          "example": "// Used with DPI; see DPI examples."
+        },
+        {
+          "id": "3.7",
+          "title": "String data type",
+          "notes": [
+            "string is a dynamic, variable-length sequence of characters.",
+            "It supports concatenation and built-in methods like len() and substr()."
+          ],
+          "example": "module dt_string;\n  string s = \"abc\";\n  initial s = {s, \"def\"};\nendmodule"
+        },
+        {
+          "id": "3.8",
+          "title": "Event data type",
+          "notes": [
+            "event is a synchronization handle used with -> and @.",
+            "It coordinates processes but is not a hardware signal."
+          ],
+          "example": "module dt_event;\n  event ev;\n  initial begin\n    #10 -> ev;\n  end\n  initial begin\n    @ev;\n    $display(\"Event at %0t\", $time);\n  end\nendmodule"
+        },
+        {
+          "id": "3.9",
+          "title": "User-defined types",
+          "notes": [
+            "typedef creates clear names for complex or commonly used types.",
+            "It improves readability and abstraction."
+          ],
+          "example": "typedef logic [31:0] addr_t;\nmodule dt_udt;\n  addr_t addr;\nendmodule"
+        },
+        {
+          "id": "3.10",
+          "title": "Enumerations",
+          "notes": [
+            "Enums define named values with a specific base type.",
+            "They are strongly typed and can be cast to integers when needed."
+          ],
+          "example": "typedef enum logic [1:0] {IDLE, READ, WRITE} state_t;"
+        },
+        {
+          "id": "3.11",
+          "title": "Structures and unions",
+          "notes": [
+            "struct groups named fields; union overlays them in the same storage.",
+            "packed structs map directly to bits; unpacked structs are more abstract."
+          ],
+          "example": "typedef struct packed {\n  logic [7:0] a;\n  logic [7:0] b;\n} pair_t;"
+        },
+        {
+          "id": "3.12",
+          "title": "Class",
+          "notes": [
+            "Classes define reference types with properties and methods.",
+            "Objects are created with new and accessed via handles."
+          ],
+          "example": "class Packet;\n  rand bit [3:0] cmd;\n  function new();\n    cmd = 0;\n  endfunction\nendclass"
+        },
+        {
+          "id": "3.13",
+          "title": "Singular and aggregate types",
+          "notes": [
+            "Singular types hold one value; aggregates hold collections.",
+            "Aggregates include arrays, structs, unions, and classes."
+          ],
+          "example": "// Example: scalar int vs struct or array."
+        },
+        {
+          "id": "3.14",
+          "title": "Casting",
+          "notes": [
+            "Static casting uses type'(expression) syntax.",
+            "Casting can change between compatible scalar or aggregate types."
+          ],
+          "example": "logic [7:0] v;\nint         i;\ninitial begin\n  i = 42;\n  v = logic'(i);\nend"
+        },
+        {
+          "id": "3.15",
+          "title": "$cast dynamic casting",
+          "notes": [
+            "$cast performs runtime-checked casting, mainly for class handles.",
+            "It reports success or failure instead of silently misinterpreting."
+          ],
+          "example": "Base b;\nDerived d;\nif (!$cast(d, b)) $display(\"cast failed\");"
+        },
+        {
+          "id": "3.16",
+          "title": "Bit-stream casting",
+          "notes": [
+            "Bit-stream casting reinterprets bits across different packed aggregates.",
+            "Useful for serializing and deserializing complex packed types."
+          ],
+          "example": "bit [31:0] flat;\nstruct packed {bit [7:0] a,b,c,d;} s;\ninitial begin\n  flat = 32'hA5A5_FF00;\n  s = flat;\nend"
+        }
+      ]
+    },
+
+    {
+      "id": 4,
+      "title": "Arrays",
+      "subsections": [
+        {
+          "id": "4.1",
+          "title": "Introduction (informative)",
+          "notes": [
+            "Arrays are collections of elements of the same type accessed via indices.",
+            "SystemVerilog supports packed, unpacked, dynamic, associative arrays, and queues."
+          ],
+          "example": "module arr_intro;\nendmodule"
+        },
+        {
+          "id": "4.2",
+          "title": "Packed and unpacked arrays",
+          "notes": [
+            "Packed arrays are contiguous bits declared before the name and behave like vectors.",
+            "Unpacked arrays are declared after the name and represent separate elements."
+          ],
+          "example": "bit   [7:0] packed_byte;\nint          unpacked_arr[8];"
+        },
+        {
+          "id": "4.3",
+          "title": "Multiple dimensions",
+          "notes": [
+            "Both packed and unpacked arrays can be multidimensional.",
+            "Packed dimensions follow the type; unpacked dimensions follow the name."
+          ],
+          "example": "bit [3:0][7:0] a;\nint             b[4][8];"
+        },
+        {
+          "id": "4.4",
+          "title": "Indexing and slicing of arrays",
+          "notes": [
+            "Use [index] for elements, [msb:lsb] for slices, [base +: width] for variable slices.",
+            "These operations apply to packed arrays and, with restrictions, to unpacked arrays."
+          ],
+          "example": "logic [7:0] v;\ninitial begin\n  v[3:0]   = 4'hF;\n  v[0 +:4] = 4'hA;\nend"
+        },
+        {
+          "id": "4.5",
+          "title": "Array querying functions",
+          "notes": [
+            "Array methods like size(), num(), and exists() provide introspection.",
+            "They are especially useful with associative arrays and queues."
+          ],
+          "example": "int q[$];\ninitial begin\n  q.push_back(1);\n  $display(\"size=%0d\", q.size());\nend"
+        },
+        {
+          "id": "4.6",
+          "title": "Dynamic arrays",
+          "notes": [
+            "Dynamic arrays have a size chosen at runtime and are declared with empty brackets.",
+            "They are allocated and resized using new(size) or new(size, init)."
+          ],
+          "example": "int da[];\ninitial begin\n  da = new[16];\n  da = new[32](da);\nend"
+        },
+        {
+          "id": "4.7",
+          "title": "Array assignment",
+          "notes": [
+            "Assignments between unpacked arrays require matching dimensions and lengths.",
+            "Packed arrays are treated as vectors and can be assigned from vector expressions."
+          ],
+          "example": "int A[4], B[4];\ninitial A = B;"
+        },
+        {
+          "id": "4.8",
+          "title": "Arrays as arguments",
+          "notes": [
+            "Arrays can be passed to tasks and functions by value or by reference.",
+            "Open array arguments support flexible dimensions."
+          ],
+          "example": "task sum_array(input int a[], output int s);\n  s = 0;\n  foreach (a[i]) s += a[i];\nendtask"
+        },
+        {
+          "id": "4.9",
+          "title": "Associative arrays",
+          "notes": [
+            "Associative arrays allocate elements on demand and are indexed by key.",
+            "Keys can be integers, strings, or other scalar types."
+          ],
+          "example": "int hits[string];\ninitial hits[\"port0\"] = 1;"
+        },
+        {
+          "id": "4.10",
+          "title": "Associative array methods",
+          "notes": [
+            "Methods include num(), first(), last(), next(), prev(), and exists().",
+            "They traverse or query the set of used indices."
+          ],
+          "example": "int hits[string];\nstring k;\ninitial begin\n  hits[\"p0\"] = 1;\n  if (hits.first(k)) $display(\"first=%s\", k);\nend"
+        },
+        {
+          "id": "4.11",
+          "title": "Associative array assignment",
+          "notes": [
+            "Assignment between associative arrays copies key-value pairs element by element.",
+            "Indexes present in the source are created in the destination."
+          ],
+          "example": "int a[string], b[string];\ninitial begin\n  a[\"x\"] = 1;\n  b = a;\nend"
+        },
+        {
+          "id": "4.12",
+          "title": "Associative array arguments",
+          "notes": [
+            "Associative arrays can be passed by reference to tasks and functions.",
+            "Open associative array arguments allow flexible index types."
+          ],
+          "example": "task clear_assoc(ref int a[string]);\n  foreach (a[k]) a.delete(k);\nendtask"
+        },
+        {
+          "id": "4.13",
+          "title": "Associative array literals",
+          "notes": [
+            "Array literals can initialize associative arrays with key:value entries."
+          ],
+          "example": "int hits[string] = '{\"p0\": 1, \"p1\": 0};"
+        },
+        {
+          "id": "4.14",
+          "title": "Queues",
+          "notes": [
+            "Queues are ordered collections with variable size and indices 0 to $.",
+            "Methods push_front, push_back, pop_front, and pop_back modify queue contents."
+          ],
+          "example": "int q[$];\ninitial begin\n  q.push_back(1);\n  q.push_front(0);\n  q.pop_back();\nend"
+        },
+        {
+          "id": "4.15",
+          "title": "Array manipulation methods",
+          "notes": [
+            "Methods such as sort(), reverse(), shuffle(), and unique() operate on arrays.",
+            "They provide convenient in-place transformations."
+          ],
+          "example": "int arr[3] = '{3,1,2};\ninitial arr.sort();"
+        }
+      ]
+    },
+
+    {
+      "id": 5,
+      "title": "Data Declarations",
+      "subsections": [
+        {
+          "id": "5.1",
+          "title": "Introduction (informative)",
+          "notes": [
+            "Data declarations introduce objects, specify type, lifetime, and initialization."
+          ],
+          "example": "module decl_intro;\nendmodule"
+        },
+        {
+          "id": "5.2",
+          "title": "Data declaration syntax",
+          "notes": [
+            "Syntax extends Verilog to include new types and additional qualifiers."
+          ],
+          "example": "logic [7:0] data;\nconst int   MAX = 255;"
+        },
+        {
+          "id": "5.3",
+          "title": "Constants",
+          "notes": [
+            "const declares constants that cannot be written after initialization.",
+            "localparam defines constants within modules."
+          ],
+          "example": "localparam int WIDTH = 8;\nconst int MAX_VAL = 255;"
+        },
+        {
+          "id": "5.4",
+          "title": "Variables",
+          "notes": [
+            "Variables store values that can change during simulation.",
+            "They have a defined lifetime and can be automatic or static."
+          ],
+          "example": "int counter;"
+        },
+        {
+          "id": "5.5",
+          "title": "Scope and lifetime",
+          "notes": [
+            "Scope is defined by hierarchy and named blocks; lifetime is static or automatic."
+          ],
+          "example": "task automatic do_it(); int i; endtask"
+        },
+        {
+          "id": "5.6",
+          "title": "Nets, regs, and logic",
+          "notes": [
+            "logic unifies reg and single-driver wire usage for most RTL.",
+            "Nets represent connections driven by continuous assignments."
+          ],
+          "example": "wire  a;\nlogic b;"
+        },
+        {
+          "id": "5.7",
+          "title": "Signal aliasing",
+          "notes": [
+            "Aliasing allows different names to refer to the same underlying signal."
+          ],
+          "example": "// Example: alias constructs, tool-specific usage."
+        },
+        {
+          "id": "5.8",
+          "title": "Type compatibility",
+          "notes": [
+            "Type compatibility rules govern assignment and argument passing.",
+            "Casting may be required for incompatible types."
+          ],
+          "example": "// See casting examples from Section 3.14."
+        }
+      ]
+    },
+
+    {
+      "id": 6,
+      "title": "Attributes",
+      "subsections": [
+        {
+          "id": "6.1",
+          "title": "Introduction (informative)",
+          "notes": [
+            "Attributes provide a standard syntax for tool-specific directives."
+          ],
+          "example": "module attr_intro;\nendmodule"
+        },
+        {
+          "id": "6.2",
+          "title": "Default attribute type",
+          "notes": [
+            "Attributes have a default type and can be attached to many constructs."
+          ],
+          "example": "(* keep = \"true\" *) logic debug_sig;"
+        }
+      ]
+    },
+
+    {
+      "id": 7,
+      "title": "Operators and Expressions",
+      "subsections": [
+        { "id": "7.1", "title": "Introduction (informative)", "notes": ["Summarizes operator categories and precedence."], "example": "module op_intro;\nendmodule" },
+        { "id": "7.2", "title": "Operator syntax", "notes": ["Defines formal syntax for operators in expressions."], "example": "" },
+        { "id": "7.3", "title": "Assignment operators", "notes": ["Includes = and compound operators such as += and <<=."], "example": "a += 1;" },
+        { "id": "7.4", "title": "Operations on logic and bit types", "notes": ["Describes behavior on 2-state and 4-state values."], "example": "" },
+        { "id": "7.5", "title": "Wild equality and wild inequality", "notes": ["=== and !== treat x and z bits specially."], "example": "if (a === b) ;" },
+        { "id": "7.6", "title": "Real operators", "notes": ["Real arithmetic follows IEEE rules with some caveats."], "example": "" },
+        { "id": "7.7", "title": "Size", "notes": ["Size context rules for expressions and assignments."], "example": "" },
+        { "id": "7.8", "title": "Sign", "notes": ["Sign extension rules for signed arithmetic."], "example": "" },
+        { "id": "7.9", "title": "Operator precedence and associativity", "notes": ["Defines ordering of evaluation."], "example": "" },
+        { "id": "7.10", "title": "Built-in methods", "notes": ["Describes methods on built-in types, such as array methods."], "example": "" },
+        { "id": "7.11", "title": "Static prefixes", "notes": ["Static prefixes allow accessing static methods or properties."], "example": "" },
+        { "id": "7.12", "title": "Concatenation", "notes": ["{a, b} concatenates values into a wider vector."], "example": "{a, b}" },
+        { "id": "7.13", "title": "Unpacked array expressions", "notes": ["Expressions involving unpacked arrays."], "example": "" },
+        { "id": "7.14", "title": "Structure expressions", "notes": ["Expressions using struct values."], "example": "" },
+        { "id": "7.15", "title": "Tagged union expressions and member access", "notes": ["Tagged unions carry a tag and value."], "example": "" },
+        { "id": "7.16", "title": "Aggregate expressions", "notes": ["Expressions that operate on aggregates."], "example": "" },
+        { "id": "7.17", "title": "Operator overloading", "notes": ["Describes limited operator overloading via methods."], "example": "" },
+        { "id": "7.18", "title": "Streaming operators (pack / unpack)", "notes": ["<< and >> with braces stream bits."], "example": "" },
+        { "id": "7.19", "title": "Conditional operator", "notes": ["?: chooses between two expressions based on a condition."], "example": "y = sel ? a : b;" },
+        { "id": "7.20", "title": "Set membership", "notes": ["inside operator tests for membership in a set."], "example": "if (x inside { [0:3] }) ;" }
+      ]
+    },
+
+    {
+      "id": 8,
+      "title": "Procedural Statements and Control Flow",
+      "subsections": [
+        {
+          "id": "8.1",
+          "title": "Introduction (informative)",
+          "notes": [
+            "Procedural statements live in initial, always, task, and function blocks.",
+            "SystemVerilog adds final blocks, C-like break/continue/return, and do...while."
+          ],
+          "example": "module proc_intro;\n  initial $display(\"Start\");\n  final   $display(\"End\");\nendmodule"
+        },
+        {
+          "id": "8.2",
+          "title": "Statements",
+          "notes": [
+            "Defines the grammar for all procedural statements.",
+            "Includes assignments, conditionals, loops, blocks, waits, and assertions."
+          ],
+          "example": ""
+        },
+        {
+          "id": "8.3",
+          "title": "Blocking and nonblocking assignments",
+          "notes": [
+            "Blocking = executes immediately; nonblocking <= schedules update.",
+            "Nonblocking assignments are used for edge-triggered sequential logic."
+          ],
+          "example": "always_ff @(posedge clk) q <= d;"
+        },
+        {
+          "id": "8.4",
+          "title": "Selection statements",
+          "notes": [
+            "if and case statements control conditional execution.",
+            "unique and priority qualifiers add semantic checks for completeness and priority."
+          ],
+          "example": "unique case (sel)\n  2'b00: y = a;\n  2'b01: y = b;\n  default: y = '0;\nendcase"
+        },
+        {
+          "id": "8.5",
+          "title": "Loop statements",
+          "notes": [
+            "Loops include for, while, do...while, forever, and repeat.",
+            "do...while tests the condition at the end, ensuring at least one iteration."
+          ],
+          "example": "int i;\ninitial begin\n  for (i = 0; i < 10; i++) $display(i);\n  do i++; while (i < 20);\nend"
+        },
+        {
+          "id": "8.6",
+          "title": "Jump statements",
+          "notes": [
+            "break exits the nearest loop; continue skips to the next iteration.",
+            "return exits from a task or function."
+          ],
+          "example": "for (int i=0; i<10; i++) begin\n  if (i == 5) break;\nend"
+        },
+        {
+          "id": "8.7",
+          "title": "Final blocks",
+          "notes": [
+            "final blocks execute once at the end of simulation and cannot contain delays.",
+            "They are useful for printing statistics or summaries."
+          ],
+          "example": "final $display(\"Simulation done at %0t\", $time);"
+        },
+        {
+          "id": "8.8",
+          "title": "Named blocks and statement labels",
+          "notes": [
+            "Blocks can have names for clarity and for use with disable.",
+            "Names also help structure complex procedural code."
+          ],
+          "example": "begin : blk\n  int x;\nend"
+        },
+        {
+          "id": "8.9",
+          "title": "Disable",
+          "notes": [
+            "disable block_name terminates execution of that named block.",
+            "Useful for early exit from loops and blocks."
+          ],
+          "example": "begin : loop_blk\n  for (int i=0; i<10; i++) begin\n    if (stop) disable loop_blk;\n  end\nend"
+        },
+        {
+          "id": "8.10",
+          "title": "Event control",
+          "notes": [
+            "Event controls use @ to wait on signals, events, or event expressions.",
+            "Edge-sensitive and level-sensitive forms are both supported."
+          ],
+          "example": "@(posedge clk);\n@(a or b);"
+        },
+        {
+          "id": "8.11",
+          "title": "Level-sensitive sequence controls",
+          "notes": [
+            "wait statements block until a condition becomes true.",
+            "More complex constructs handle ordered sequences of events."
+          ],
+          "example": "wait (ready);"
+        },
+        {
+          "id": "8.12",
+          "title": "Procedural assign and deassign removal",
+          "notes": [
+            "Discusses force/release and assign/deassign interactions and deprecation.",
+            "Modern code prefers continuous assign and explicit drivers."
+          ],
+          "example": "// Use continuous assign instead of procedural assign in new code."
+        }
+      ]
+    },
+
+    {
+      "id": 9,
+      "title": "Processes",
+      "subsections": [
+        {
+          "id": "9.1",
+          "title": "Introduction (informative)",
+          "notes": [
+            "Describes modeling of combinational, latched, sequential logic, and threads."
+          ],
+          "example": "module proc_intro2;\nendmodule"
+        },
+        {
+          "id": "9.2",
+          "title": "Combinational logic",
+          "notes": [
+            "always_comb is recommended for combinational logic.",
+            "The tool infers sensitivity lists."
+          ],
+          "example": "always_comb y = a & b;"
+        },
+        {
+          "id": "9.3",
+          "title": "Latched logic",
+          "notes": [
+            "always_latch is intended for level-sensitive storage elements.",
+            "It infers latches when incomplete assignments occur."
+          ],
+          "example": "always_latch if (en) q <= d;"
+        },
+        {
+          "id": "9.4",
+          "title": "Sequential logic",
+          "notes": [
+            "always_ff is used for edge-triggered sequential logic.",
+            "It captures flops and registers with clear intent."
+          ],
+          "example": "always_ff @(posedge clk, negedge rst_n)\n  if (!rst_n) q <= 0;\n  else        q <= d;"
+        },
+        {
+          "id": "9.5",
+          "title": "Continuous assignments",
+          "notes": [
+            "Continuous assign statements drive nets outside procedural blocks.",
+            "They represent hardware wiring equations."
+          ],
+          "example": "assign y = a & b;"
+        },
+        {
+          "id": "9.6",
+          "title": "fork...join",
+          "notes": [
+            "fork...join creates parallel threads that all must finish.",
+            "join_any and join_none alter completion semantics."
+          ],
+          "example": "initial fork\n  #5  $display(\"A\");\n  #10 $display(\"B\");\njoin"
+        },
+        {
+          "id": "9.7",
+          "title": "Process execution threads",
+          "notes": [
+            "Describes process handles and control over spawned threads.",
+            "Advanced usage includes disabling or waiting on specific processes."
+          ],
+          "example": "// See advanced examples for process handles and disable fork."
+        }
+      ]
+    },
+
+    {
+      "id": 10,
+      "title": "Tasks and Functions (summary)",
+      "subsections": [
+        {
+          "id": "10.1",
+          "title": "Tasks vs functions",
+          "notes": [
+            "Functions return a value and cannot contain time-consuming constructs.",
+            "Tasks do not return a value and can contain delays and event controls."
+          ],
+          "example": "function int add(int a, b);\n  return a + b;\nendfunction\n\ntask delay_print(time t);\n  #t $display(\"after delay\");\nendtask"
+        },
+        {
+          "id": "10.2",
+          "title": "Automatic and static",
+          "notes": [
+            "automatic tasks/functions allocate new storage for each activation.",
+            "static lifetime shares variables across activations."
+          ],
+          "example": "task automatic do_it(); int i; endtask"
+        }
+      ]
+    }
+  ]
+}
